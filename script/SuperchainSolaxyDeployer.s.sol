@@ -7,31 +7,39 @@ import {SuperchainSolaxy} from "../src/SuperchainSolaxy.sol";
 
 contract SuperchainSolaxyDeployer is Script {
     bytes32 SALT = keccak256(abi.encodePacked("Tasty Superchain Solaxy"));
-    string[] chainsToDeployTo = [];
+    string[] targetChains = [
+        "mainnet/op",
+        "mainnet/base",
+        "mainnet/celo",
+        "mainnet/mode",
+        "mainnet/unichain",
+        "mainnet/worldchain",
+        "mainnet/zora"
+    ];
 
     function setUp() public {}
 
     function run() public {
-        for (uint256 i = 0; i < chainsToDeployTo.length; i++) {
-            string memory chainToDeployTo = chainsToDeployTo[i];
-            console.log("Deploying to chain: ", chainToDeployTo);
-            vm.createSelectFork(chainToDeployTo);
-            address deployedAddress = deploySuperchainSolaxy();
+        for (uint256 i = 0; i < targetChains.length; i++) {
+            string memory target = targetChains[i];
+            string memory targetRPC = vm.rpcUrl(target);
+            console.log("Deploying to: ", target);
+            vm.createSelectFork(targetRPC);
+            deploySuperchainSolaxy();
         }
     }
 
-    function deploySuperchainSolaxy() public returns (address addr_) {
+    function deploySuperchainSolaxy() public {
         bytes memory initCode = abi.encodePacked(type(SuperchainSolaxy).creationCode);
-        address preComputedAddress = vm.computeCreate2Address(SALT, keccak256(initCode));
+        address solaxy = vm.computeCreate2Address(SALT, keccak256(initCode));
 
-        if (preComputedAddress.code.length > 0) {
-            console.log("SuperchainSolaxy already deployed at %s", preComputedAddress, "on chain id: ", block.chainid);
-            addr_ = preComputedAddress;
+        if (solaxy.code.length > 0) {
+            console.log("SuperchainSolaxy already deployed at %s", solaxy, "on chain id: ", block.chainid);
         } else {
             vm.startBroadcast(msg.sender);
-            addr_ = address(new SuperchainSolaxy{salt: SALT});
+            solaxy = address(new SuperchainSolaxy{salt: SALT}());
             vm.stopBroadcast();
-            console.log("Deployed SuperchainSolaxy at address: ", addr_, "on chain id: ", block.chainid);
+            console.log("Deployed SuperchainSolaxy at address: ", solaxy, "on chain id: ", block.chainid);
         }
     }
 }
