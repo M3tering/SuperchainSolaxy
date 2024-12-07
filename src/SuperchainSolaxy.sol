@@ -2,12 +2,12 @@
 // Compatible with OpenZeppelin Contracts ^5.0.0
 pragma solidity ^0.8.24;
 
-import {ERC20, IERC20} from "@openzeppelin/contracts@5.0.2/token/ERC20/ERC20.sol";
-import {ERC20Burnable} from "@openzeppelin/contracts@5.0.2/token/ERC20/extensions/ERC20Burnable.sol";
-import {ERC20FlashMint} from "@openzeppelin/contracts@5.0.2/token/ERC20/extensions/ERC20FlashMint.sol";
-import {ERC20Permit} from "@openzeppelin/contracts@5.0.2/token/ERC20/extensions/ERC20Permit.sol";
+import {ERC20, IERC20} from "@openzeppelin/contracts@5.1.0/token/ERC20/ERC20.sol";
+import {ERC20Burnable} from "@openzeppelin/contracts@5.1.0/token/ERC20/extensions/ERC20Burnable.sol";
+import {ERC20FlashMint} from "@openzeppelin/contracts@5.1.0/token/ERC20/extensions/ERC20FlashMint.sol";
+import {ERC20Permit} from "@openzeppelin/contracts@5.1.0/token/ERC20/extensions/ERC20Permit.sol";
 
-import {IERC7802, IERC165} from "../../interfaces/IERC7802.sol";
+import {IERC7802, IERC165} from "./interfaces/IERC7802.sol";
 
 /**
  * @title SuperchainSolaxy
