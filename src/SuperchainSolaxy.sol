@@ -19,7 +19,7 @@ contract SuperchainSolaxy is IERC7802, ERC20, ERC20Burnable, ERC20Permit, ERC20F
 
     error Unauthorized();
 
-    constructor() ERC20("Solaxy", "SOLX") ERC20Permit("Solaxy") {}
+    constructor() ERC20("Solaxy", "SLX") ERC20Permit("Solaxy") {}
 
     function crosschainMint(address _to, uint256 _amount) external {
         if (msg.sender != SUPERCHAIN_TOKEN_BRIDGE) revert Unauthorized();
