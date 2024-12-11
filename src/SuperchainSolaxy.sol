@@ -7,19 +7,32 @@ import {ERC20Burnable} from "@openzeppelin/contracts@5.1.0/token/ERC20/extension
 import {ERC20FlashMint} from "@openzeppelin/contracts@5.1.0/token/ERC20/extensions/ERC20FlashMint.sol";
 import {ERC20Permit} from "@openzeppelin/contracts@5.1.0/token/ERC20/extensions/ERC20Permit.sol";
 
+import {IOptimismMintableERC20} from "./interfaces/IOptimismMintableERC20.sol";
 import {IERC7802, IERC165} from "./interfaces/IERC7802.sol";
 
-/**
- * @title SuperchainSolaxy
- * @notice A standard ERC20 extension implementing IERC7802 for unified cross-chain fungibility across
- * the Superchain. Allows the SuperchainTokenBridge to mint and burn tokens as needed.
- */
-contract SuperchainSolaxy is IERC7802, ERC20, ERC20Burnable, ERC20Permit, ERC20FlashMint {
+contract SuperchainSolaxy is IOptimismMintableERC20, IERC7802, ERC20, ERC20Burnable, ERC20Permit, ERC20FlashMint {
     address public constant SUPERCHAIN_TOKEN_BRIDGE = 0x4200000000000000000000000000000000000028;
+    address public constant L2_STANDARD_BRIDGE = 0x4200000000000000000000000000000000000010;
+    address public constant REMOTE_TOKEN = 0x4200000000000000000000000000000000000010; // ToDo: use real L1 contract address
 
     error Unauthorized();
 
+    event Mint(address indexed account, uint256 amount);
+    event Burn(address indexed account, uint256 amount);
+
     constructor() ERC20("Solaxy", "SLX") ERC20Permit("Solaxy") {}
+
+    function mint(address _to, uint256 _amount) external {
+        if (msg.sender != L2_STANDARD_BRIDGE) revert Unauthorized();
+        _mint(_to, _amount);
+        emit Mint(_to, _amount);
+    }
+
+    function burn(address _from, uint256 _amount) external {
+        if (msg.sender != L2_STANDARD_BRIDGE) revert Unauthorized();
+        _burn(_from, _amount);
+        emit Burn(_from, _amount);
+    }
 
     function crosschainMint(address _to, uint256 _amount) external {
         if (msg.sender != SUPERCHAIN_TOKEN_BRIDGE) revert Unauthorized();
@@ -33,16 +46,16 @@ contract SuperchainSolaxy is IERC7802, ERC20, ERC20Burnable, ERC20Permit, ERC20F
         emit CrosschainBurn(_from, _amount, msg.sender);
     }
 
-    /**
-     * @notice Query if a contract implements an interface
-     * @param _interfaceId The interface identifier, as specified in ERC-165
-     * @dev Interface identification is specified in ERC-165. This function
-     * uses less than 30,000 gas.
-     * @return `true` if the contract implements `_interfaceId` and
-     * `_interfaceId` is not 0xffffffff, `false` otherwise
-     */
+    function bridge() public pure returns (address) {
+        return L2_STANDARD_BRIDGE;
+    }
+
+    function remoteToken() public pure returns (address) {
+        return REMOTE_TOKEN;
+    }
+
     function supportsInterface(bytes4 _interfaceId) public view virtual returns (bool) {
-        return _interfaceId == type(IERC7802).interfaceId || _interfaceId == type(IERC20).interfaceId
-            || _interfaceId == type(IERC165).interfaceId;
+        return _interfaceId == type(IOptimismMintableERC20).interfaceId || _interfaceId == type(IERC7802).interfaceId
+            || _interfaceId == type(IERC20).interfaceId || _interfaceId == type(IERC165).interfaceId;
     }
 }
